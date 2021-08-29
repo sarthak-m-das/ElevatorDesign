@@ -33,36 +33,14 @@ public class ElevatorScheduler {
 			case UP:
 				if(request.getSource() >= elevator.getCurrentPosition())
 					time = Math.abs(elevator.getCurrentPosition()-request.getSource());
-				else {
-					int upMaxDestination=elevator.getNextDestination();
-					for(Request req : elevator.getToDeliever()) {
-						if(upMaxDestination<req.getDestination())
-							upMaxDestination=req.getDestination();
-					}
-					for(Request req : elevator.getToPickUp()) {
-						if(upMaxDestination<req.getSource())
-							upMaxDestination=req.getSource();
-					}
-					
-					time = Math.abs(upMaxDestination - elevator.getCurrentPosition()) + Math.abs(upMaxDestination - request.getSource());
-				}
+				else 
+					time = -1; //-1 means indefinite
 				break;
 			case DOWN:
 				if(request.getSource() <= elevator.getCurrentPosition())
 					time = Math.abs(elevator.getCurrentPosition()-request.getSource());
-				else {
-					int downMaxDestination=elevator.getNextDestination();
-					for(Request req : elevator.getToDeliever()) {
-						if(downMaxDestination>req.getDestination())
-							downMaxDestination=req.getDestination();
-					}
-					for(Request req : elevator.getToPickUp()) {
-						if(downMaxDestination>req.getSource())
-							downMaxDestination=req.getSource();
-					}
-					
-					time = Math.abs(downMaxDestination - elevator.getCurrentPosition()) + Math.abs(downMaxDestination - request.getSource());
-				}
+				else 
+					time = -1; //-1 means indefinite
 				break;
 			}
 			timeTakenByLifts.add(time);
@@ -72,7 +50,7 @@ public class ElevatorScheduler {
 		int minTime=timeTakenByLifts.get(0);
 		Elevator assignedElevator = elevators.getElevators().get(0);
 		for(int i=1;i<timeTakenByLifts.size();i++) {
-			if(timeTakenByLifts.get(i)<minTime) {
+			if(timeTakenByLifts.get(i)<minTime && timeTakenByLifts.get(i)!=-1) {
 				minTime = timeTakenByLifts.get(i);
 				assignedElevator = elevators.getElevators().get(i);
 			}
