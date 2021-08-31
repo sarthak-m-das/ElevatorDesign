@@ -1,14 +1,14 @@
-package com.elevator.design.ElevatorSchedulor;
+package com.elevator.design.ElevatorScheduler;
 import java.util.*;
 
-import com.elevator.design.ElevatorSchedulor.Request.Button;
+import com.elevator.design.ElevatorScheduler.Request.Button;
 import com.elevator.design.ElevatorSimulator.Elevator;
-import com.elevator.design.ElevatorSimulator.Elevators;
+import com.elevator.design.ElevatorSimulator.ElevatorSimulator;
 import static com.elevator.design.Configs.*;
 
 public class ElevatorScheduler {
 	
-	public void requestlistener(Elevators elevators) {
+	public void requestlistener(ElevatorSimulator elevators) {
 		Scanner scanner = new Scanner(System.in);
 		while(true) {
 			Request newRequest = new Request();
@@ -27,7 +27,7 @@ public class ElevatorScheduler {
 		}
 	}
 	
-	private String selectLift(Elevators elevators, Request request) {
+	private String selectLift(ElevatorSimulator elevators, Request request) {
 		List<Integer> timeTakenByLifts = new ArrayList<Integer>();
 		for(Elevator elevator : elevators.getElevators()) {
 			int time=0;

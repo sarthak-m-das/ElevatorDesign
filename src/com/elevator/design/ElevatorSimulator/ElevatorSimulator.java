@@ -4,17 +4,17 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 
-import com.elevator.design.ElevatorSchedulor.Request;
+import com.elevator.design.ElevatorScheduler.Request;
 import com.elevator.design.ElevatorSimulator.Elevator.Direction;
 
-public class Elevators implements Runnable {
+public class ElevatorSimulator implements Runnable {
 	
 	private List<Elevator> elevators=new ArrayList<Elevator>();
 	
 	private FileHandler handler;
 	private Logger Log;
 	
-	public Elevators() throws SecurityException, IOException{
+	public ElevatorSimulator() throws SecurityException, IOException{
 		handler = new FileHandler("ElevatorSimulator.log", true);
 		Log = Logger.getLogger("Elevator Simulation");
 		Log.addHandler(handler);

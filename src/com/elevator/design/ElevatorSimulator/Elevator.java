@@ -3,7 +3,7 @@ package com.elevator.design.ElevatorSimulator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.elevator.design.ElevatorSchedulor.Request;
+import com.elevator.design.ElevatorScheduler.Request;
 
 public class Elevator{
 	private String name;

@@ -1,4 +1,4 @@
-package com.elevator.design.ElevatorSchedulor;
+package com.elevator.design.ElevatorScheduler;
 
 public class Request {
 	private int source;
