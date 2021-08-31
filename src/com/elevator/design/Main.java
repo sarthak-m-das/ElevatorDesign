@@ -1,13 +1,15 @@
 package com.elevator.design;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elevator.design.Elevators.Elevator;
-
+import com.elevator.design.ElevatorSchedulor.ElevatorScheduler;
+import com.elevator.design.ElevatorSimulator.Elevator;
+import com.elevator.design.ElevatorSimulator.Elevators;
 
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SecurityException, IOException {
 		
 		Elevators elevators = new Elevators();
 		Elevator elevatorA = new Elevator();
