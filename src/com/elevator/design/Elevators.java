@@ -1,5 +1,6 @@
 package com.elevator.design;
 import java.util.*;
+import java.util.logging.Logger;
 
 import com.elevator.design.ElevatorScheduler.Request;
 import com.elevator.design.Elevators.Elevator.Direction;
@@ -8,26 +9,38 @@ public class Elevators implements Runnable {
 	
 	private List<Elevator> elevators=new ArrayList<Elevator>();
 	
+	private static final Logger Log = Logger.getLogger("Elevator Simulation");
+	
 	//Running the Elevators
 	public void run() {
-		this.runElevators();
+		while(true) {
+			System.out.println("\n*******************");
+			this.runElevators();
+			
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
-	private void runElevators() {
+	public void runElevators() {
 		Scanner scanner = new Scanner(System.in);
 		
 		for(Elevator elevator: elevators) {
 			elevator.changeCurrentPosition();
+			System.out.println("The Elevator "+elevator.getName()+" has reached floor "+elevator.getCurrentPosition());
 			
 			for(Request req : elevator.getToPickUp()) {
 				//Picking Up the people at this floor
-				System.out.println("The Elevator "+elevator.getName()+" has reached floor "+elevator.getCurrentPosition());
 				if(req.getSource()==elevator.getCurrentPosition()) {
-					System.out.println("Enter your Destination");
+					System.out.println("Enter your Destination : ");
 					req.setDestination(scanner.nextInt());
 					
 					elevator.getToPickUp().remove(req);
 					elevator.addToDeliever(req);
+					elevator.setNewState();
 				}
 			}
 			
@@ -39,19 +52,11 @@ public class Elevators implements Runnable {
 			}
 			
 			//Selecting next Destination and Direction
-			if(elevator.getCurrentPosition() == elevator.getNextDestination()) {
-				int newNextDestination=elevator.selectNextDestination();
-				elevator.setNextDestination(newNextDestination);
-				if(elevator.selectNextDestination()<elevator.getCurrentPosition())
-					elevator.setDirection(Direction.DOWN);
-				else if(elevator.selectNextDestination()>elevator.getCurrentPosition())
-					elevator.setDirection(Direction.UP);
-				else
-					elevator.setDirection(Direction.STEADY);
-			}
+			if(elevator.getCurrentPosition() == elevator.getNextDestination()) 
+				elevator.setNewState();
 		}
 	}
-	
+
 	public List<Elevator> getElevators() {
 		return elevators;
 	}
@@ -77,62 +82,80 @@ public class Elevators implements Runnable {
 			STEADY, UP, DOWN;
 		}
 		
+		@Override
+		public String toString() {
+			return "Elevator [name=" + name + ", nextDestination=" + nextDestination + ", currentPosition="
+					+ currentPosition + ", direction=" + direction + ", toDeliever=" + toDeliever + ", toPickUp="
+					+ toPickUp + "]";
+		}
+		
+		
 		public int getNextDestination() {
 			return nextDestination;
 		}
+		
+		public void setNewState() {
+			int newNextDestination=this.findNextDestination();
+			this.setNextDestination(newNextDestination);
+			
+			if(newNextDestination<this.getCurrentPosition())
+				this.setDirection(Direction.DOWN);
+			else if(newNextDestination>this.getCurrentPosition())
+				this.setDirection(Direction.UP);
+			else
+				this.setDirection(Direction.STEADY);
+			
+			System.out.println("New State of Elevator "+this.name);
+			System.out.println(this.toString());
+		}
 
 
-		public int selectNextDestination() {
+		public int findNextDestination() {
 			if(this.toDeliever.isEmpty() && this.toPickUp.isEmpty())
 				return this.currentPosition;
 			
+			int justUp = Integer.MAX_VALUE;
+			for(Request req : this.getToDeliever()) {
+				if(req.getDestination()>this.currentPosition && req.getDestination()<justUp)
+					justUp=req.getDestination();
+			}
+			for(Request req : this.getToPickUp()) {
+				if(req.getSource()>this.currentPosition && req.getSource()<justUp)
+					justUp=req.getSource();
+			}
+			
+			int justDown = Integer.MIN_VALUE;
+			for(Request req : this.getToDeliever()) {
+				if(req.getDestination()<this.currentPosition && req.getDestination()>justDown)
+					justDown=req.getDestination();
+			}
+			for(Request req : this.getToPickUp()) {
+				if(req.getSource()<this.currentPosition && req.getSource()>justDown)
+					justDown=req.getSource();
+			}
+			
 			if(this.direction == Direction.UP) {
-				int newNextDest = this.nextDestination;
-				for(Request req : this.getToDeliever()) {
-					if(req.getDestination()>newNextDest)
-						newNextDest=req.getDestination();
-				}
-				for(Request req : this.getToPickUp()) {
-					if(req.getDestination()>newNextDest)
-						newNextDest=req.getDestination();
-				}
-				if(newNextDest!=this.nextDestination)
-					return newNextDest;
-				
-				//Looking for new destination on changing direction.
-				for(Request req : this.getToDeliever()) {
-					if(req.getDestination()<newNextDest)
-						newNextDest=req.getDestination();
-				}
-				for(Request req : this.getToPickUp()) {
-					if(req.getDestination()<newNextDest)
-						newNextDest=req.getDestination();
-				}
-				return newNextDest;
+				if(justUp!=Integer.MAX_VALUE)
+					return justUp;
+				else return justDown;
+			}
+			else if(this.direction == Direction.DOWN) {
+				if(justDown!=Integer.MIN_VALUE)
+					return justDown;
+				else return justUp;
 			}
 			else {
-				int newNextDest = this.nextDestination;
-				for(Request req : this.getToDeliever()) {
-					if(req.getDestination()<newNextDest)
-						newNextDest=req.getDestination();
+				if(justUp==Integer.MAX_VALUE && justDown!=Integer.MIN_VALUE)
+					return this.currentPosition;
+				else if(justUp==Integer.MAX_VALUE)
+					return justDown;
+				else if(justDown==Integer.MIN_VALUE)
+					return justUp;
+				else {
+					if(Math.abs(justDown-this.currentPosition)>Math.abs(justUp-this.currentPosition))
+						return justUp;
+					else return justDown;
 				}
-				for(Request req : this.getToPickUp()) {
-					if(req.getDestination()<newNextDest)
-						newNextDest=req.getDestination();
-				}
-				if(newNextDest!=this.nextDestination)
-					return newNextDest;
-				
-				//Looking for new destination on changing direction.
-				for(Request req : this.getToDeliever()) {
-					if(req.getDestination()>newNextDest)
-						newNextDest=req.getDestination();
-				}
-				for(Request req : this.getToPickUp()) {
-					if(req.getDestination()>newNextDest)
-						newNextDest=req.getDestination();
-				}
-				return newNextDest;
 			}
 		}
 

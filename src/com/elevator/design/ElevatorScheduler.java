@@ -9,7 +9,6 @@ public class ElevatorScheduler {
 	
 	public void requestlistener(Elevators elevators) {
 		Scanner scanner = new Scanner(System.in);
-		
 		while(true) {
 			Request newRequest = new Request();
 			
@@ -47,7 +46,7 @@ public class ElevatorScheduler {
 		}
 		
 		//finding the lift that takes minimum time
-		int minTime=timeTakenByLifts.get(0);
+		int minTime=Integer.MAX_VALUE;
 		Elevator assignedElevator = elevators.getElevators().get(0);
 		for(int i=1;i<timeTakenByLifts.size();i++) {
 			if(timeTakenByLifts.get(i)<minTime && timeTakenByLifts.get(i)!=-1) {
@@ -57,13 +56,8 @@ public class ElevatorScheduler {
 		}
 		
 		assignedElevator.addToPickUp(request);
-		//If the elevator is not moving then setting it into motion
-		if(assignedElevator.getDirection()==Direction.STEADY) {
-			if(assignedElevator.getCurrentPosition()<request.source)
-			assignedElevator.setDirection(Direction.UP);
-			else if(assignedElevator.getCurrentPosition()>request.source)
-					assignedElevator.setDirection(Direction.DOWN);
-		}
+		assignedElevator.setNewState();
+		
 		return assignedElevator.getName();
 	}
 	
@@ -84,6 +78,4 @@ public class ElevatorScheduler {
 			this.destination = destination;
 		}
 	}
-	
-	
 }
