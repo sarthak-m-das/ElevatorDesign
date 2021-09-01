@@ -13,14 +13,12 @@ public class ElevatorScheduler {
 		while(true) {
 			Request newRequest = new Request();
 			
-			System.out.println("Enter source floor: ");
+			System.out.println("Enter source floor and button - 1.UP  2.DOWN\n");
 			newRequest.setSource(scanner.nextInt());
-			System.out.println("Press the button - 1.UP  2.DOWN\n");
-			if(scanner.nextInt()==1) {
+			if(scanner.nextInt()==1) 
 				newRequest.setDirectionToGo(Button.UP);
-			} {
+			else
 				newRequest.setDirectionToGo(Button.DOWN);
-			}
 			
 			String lift = selectLift(elevators, newRequest);
 			System.out.println("Elevator "+lift+" is arriving");
@@ -61,70 +59,65 @@ public class ElevatorScheduler {
 		
 		return assignedElevator.getName();
 	}
-
-	private int findTimeFromRequestList(Elevator elevator, Request request) {
-		int time=0;
-		int positionTrack = elevator.getCurrentPosition();
-		for(Request previousReq : elevator.getRequestList()) {
+	
+	private int findTimeFromRequestList(Elevator originalElevator, Request request) {
+		Elevator elevator = new Elevator(originalElevator);
+		int time=0, i=0;
+		List<Request> estimationRequestList = elevator.getRequestList();
+		int positionTrack = new Integer(elevator.getCurrentPosition());
+		int target = new Integer(request.getSource());
+		int currentTarget = this.nextTarget(estimationRequestList,target);
+		while(positionTrack!=target) {
+			if(currentTarget==positionTrack) {
+				currentTarget = this.nextTarget(estimationRequestList,target);
+			}
+			time++;
+			if(currentTarget>positionTrack)
+				positionTrack++;
+			else if(currentTarget<positionTrack)
+				positionTrack--;
 			
-			if(!previousReq.isPickedUp()) {
-				if(previousReq.getSource()>=positionTrack) {
-					if(request.getSource()>=positionTrack && request.getSource()<=previousReq.getSource()) {
-						time+=Math.abs(request.getSource()-positionTrack);
-						positionTrack=request.getSource();
-						break;
-					}
-					else if(request.getSource()>=previousReq.getSource() && previousReq.getDirectionToGo()==Button.UP) {
-						time+=Math.abs(request.getSource()-positionTrack);
-						positionTrack=request.getSource();
-						break;
-					}
-					
-					if(previousReq.getDirectionToGo()==Button.UP) {
-						time+=Math.abs(positionTrack-Max_floor);
-						positionTrack=Max_floor;
-					}
-					else {
-						time+=Math.abs(positionTrack-previousReq.getSource());
-						positionTrack=previousReq.getSource();
-					}
-				}
-				else {
-					if(request.getSource()<=positionTrack && request.getSource()>=previousReq.getSource()) {
-						time+=Math.abs(request.getSource()-positionTrack);
-						positionTrack=request.getSource();
-						break;
-					}
-					else if(request.getSource()<=previousReq.getSource() && previousReq.getDirectionToGo()==Button.DOWN) {
-						time+=Math.abs(request.getSource()-positionTrack);
-						positionTrack=request.getSource();
-						break;
-					}
-					
-					if(previousReq.getDirectionToGo()==Button.DOWN) {
-						time+=Math.abs(positionTrack-Min_floor);
-						positionTrack=Min_floor;
-					}
-					else {
-						time+=Math.abs(positionTrack-previousReq.getSource());
-						positionTrack=previousReq.getSource();
-					}
-				}
+			for(Request req : estimationRequestList) {
+				if(req.getSource()==positionTrack && !req.isPickedUp()) 
+					req.setPickedUp(true);
+			}
+			
+			List<Integer> toDroplist = new ArrayList<Integer>();
+			for(int k=0;k< estimationRequestList.size();k++) {
+				Request req = estimationRequestList.get(k);
+				if( req.isPickedUp() && req.getDestination()==elevator.getCurrentPosition())
+					toDroplist.add(i);
+			}
+			for(int toDrop:toDroplist)
+				estimationRequestList.remove(toDrop);
+
+//			System.out.println("positionTrack -> "+positionTrack+" currentTarget -> "+currentTarget+" target->"+target);
+		}
+		
+//		System.out.println("positionTrack -> "+positionTrack);
+		return time + Math.abs(request.getSource()-positionTrack);
+	}
+
+	private int nextTarget(List<Request> estimationRequestList, int target) {
+		if(estimationRequestList.size()==0)
+			return target;
+		
+		if(estimationRequestList.get(0).isPickedUp()) {
+			if(estimationRequestList.get(0).getDestination()==-1) {
+				int nextTar;
+				if(estimationRequestList.get(0).getDirectionToGo()==Button.UP)
+					nextTar = Max_floor;
+				else
+					nextTar =  Min_floor;
+				estimationRequestList.remove(0);
+				return nextTar;
 			}
 			else {
-				if(request.getSource()>=positionTrack && request.getSource()<=previousReq.getDestination()) {
-					time+=Math.abs(request.getSource()-positionTrack);
-					positionTrack=request.getSource();
-					break;
-				}
-				else if(request.getSource()<=positionTrack && request.getSource()>=previousReq.getDestination()) {
-					time+=Math.abs(request.getSource()-positionTrack);
-					positionTrack=request.getSource();
-					break;
-				}
-				positionTrack=request.getDestination();
+				return estimationRequestList.get(0).getDestination();
 			}
 		}
-		return time + Math.abs(request.getSource()-positionTrack);
+		else {
+			return estimationRequestList.get(0).getSource();
+		}
 	}
 }

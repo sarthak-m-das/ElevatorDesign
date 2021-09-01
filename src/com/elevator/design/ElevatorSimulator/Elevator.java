@@ -1,5 +1,6 @@
 package com.elevator.design.ElevatorSimulator;
 
+import java.awt.Button;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +17,21 @@ public class Elevator{
 		STEADY, UP, DOWN;
 	}
 	
+	public Elevator() {
+		super();
+	}
+
+	public Elevator(Elevator originalElevator) {
+		super();
+		this.name = new String(originalElevator.name);
+		this.nextDestination =  new Integer(originalElevator.nextDestination);
+		this.currentPosition =  new Integer(originalElevator.currentPosition);
+		this.direction =  originalElevator.direction;
+		for(Request req : originalElevator.getRequestList()) {
+			this.requestList.add(new Request(req));
+		}
+	}
+
 	@Override
 	public String toString() {
 		return "Elevator [name=" + name + ", nextDestination=" + nextDestination + ", currentPosition="

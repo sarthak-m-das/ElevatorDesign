@@ -2,7 +2,7 @@ package com.elevator.design.ElevatorScheduler;
 
 public class Request {
 	private int source;
-	private int destination;
+	private int destination = -1;
 	private Button directionToGo;
 	private boolean pickedUp = false;
 	
@@ -10,6 +10,21 @@ public class Request {
 		UP, DOWN
 	}
 	
+	public Request() {
+		super();
+	}
+
+	public Request(Request req) {
+		super();
+		this.source = new Integer(req.source);
+		this.destination = new Integer(req.destination);
+		if(req.directionToGo==Button.UP)
+			this.directionToGo = Button.UP;
+		else
+			this.directionToGo = Button.DOWN;
+		this.pickedUp = new Boolean(req.pickedUp);
+	}
+
 	@Override
 	public String toString() {
 		return "Request [source=" + source + ", destination=" + destination + ", directionToGo=" + directionToGo
